@@ -1,5 +1,6 @@
 #pragma once
 #include "token.h"
+#include "math_defs.h"
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -30,7 +31,7 @@ private:
 
   void add_token(TokenType type);
   void add_token(TokenType type, int64_t value);
-  void add_token(TokenType type, double value);
+  void add_token(TokenType type, real_t value);
   void add_token(TokenType type, const std::string &value);
 
   void error(const std::string &message);

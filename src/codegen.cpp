@@ -157,7 +157,7 @@ IRProgram CodeGenerator::generate(const Program &program) {
           break;
         case LiteralExpr::Type::FLOAT:
           ir_global.init_type = IRGlobalVar::InitType::FLOAT;
-          ir_global.init_value = std::get<double>(lit->value);
+          ir_global.init_value = std::get<real_t>(lit->value);
           break;
         case LiteralExpr::Type::STRING:
           ir_global.init_type = IRGlobalVar::InitType::STRING;
@@ -866,7 +866,7 @@ int CodeGenerator::gen_literal(const LiteralExpr *expr, IRFunction &func) {
 
   case LiteralExpr::Type::FLOAT: {
     // Float literals are always 64-bit doubles in GDScript
-    double d = std::get<double>(expr->value);
+    real_t d = std::get<real_t>(expr->value);
     IRInstruction instr(IROpcode::LOAD_FLOAT_IMM, IRValue::reg(reg),
                         IRValue::fimm(d));
     instr.type_hint = Variant::FLOAT;

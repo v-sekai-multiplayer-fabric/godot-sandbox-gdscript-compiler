@@ -231,21 +231,21 @@ void IRInterpreter::execute_instruction(const IRInstruction &instr,
 int64_t IRInterpreter::get_int(const Value &v) const {
   if (std::holds_alternative<int64_t>(v)) {
     return std::get<int64_t>(v);
-  } else if (std::holds_alternative<double>(v)) {
-    return static_cast<int64_t>(std::get<double>(v));
+  } else if (std::holds_alternative<real_t>(v)) {
+    return static_cast<int64_t>(std::get<real_t>(v));
   } else if (std::holds_alternative<bool>(v)) {
     return std::get<bool>(v) ? 1 : 0;
   }
   return 0;
 }
 
-double IRInterpreter::get_double(const Value &v) const {
-  if (std::holds_alternative<double>(v)) {
-    return std::get<double>(v);
+real_t IRInterpreter::get_real(const Value &v) const {
+  if (std::holds_alternative<real_t>(v)) {
+    return std::get<real_t>(v);
   } else if (std::holds_alternative<int64_t>(v)) {
-    return static_cast<double>(std::get<int64_t>(v));
+    return static_cast<real_t>(std::get<int64_t>(v));
   }
-  return 0.0;
+  return real_t(0.0);
 }
 
 bool IRInterpreter::get_bool(const Value &v) const {
@@ -253,8 +253,8 @@ bool IRInterpreter::get_bool(const Value &v) const {
     return std::get<bool>(v);
   } else if (std::holds_alternative<int64_t>(v)) {
     return std::get<int64_t>(v) != 0;
-  } else if (std::holds_alternative<double>(v)) {
-    return std::get<double>(v) != 0.0;
+  } else if (std::holds_alternative<real_t>(v)) {
+    return std::get<real_t>(v) != 0.0;
   }
   return false;
 }

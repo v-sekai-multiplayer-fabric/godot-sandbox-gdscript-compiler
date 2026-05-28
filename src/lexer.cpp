@@ -1,4 +1,5 @@
 #include "lexer.h"
+#include "math_defs.h"
 #include "compiler_exception.h"
 #include <cctype>
 #include <stdexcept>
@@ -254,7 +255,7 @@ void Lexer::scan_number() {
   std::string num_str = m_source.substr(m_start, m_current - m_start);
 
   if (is_float) {
-    double d = std::stod(num_str);
+    real_t d = std::stod(num_str);
     add_token(TokenType::FLOAT, d);
   } else {
     int64_t i = std::stoll(num_str);
@@ -324,7 +325,7 @@ void Lexer::add_token(TokenType type, int64_t value) {
   m_tokens.push_back(token);
 }
 
-void Lexer::add_token(TokenType type, double value) {
+void Lexer::add_token(TokenType type, real_t value) {
   std::string text = m_source.substr(m_start, m_current - m_start);
   Token token(type, text, m_line, m_column);
   token.value = value;

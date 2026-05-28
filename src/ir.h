@@ -1,4 +1,5 @@
 #pragma once
+#include "math_defs.h"
 #include "variant_types.h"
 #include <cstdint>
 #include <memory>
@@ -111,14 +112,14 @@ struct IRValue {
   enum class Type {
     REGISTER,  // Virtual register (will be mapped to RISC-V registers)
     IMMEDIATE, // Immediate integer value
-    FLOAT,     // Immediate float value (64-bit double)
+    FLOAT,     // Immediate float value (precision controlled by REAL_T_IS_DOUBLE)
     LABEL,     // Branch target label
     VARIABLE,  // Local variable name
     STRING     // String constant
   };
 
   Type type = Type::IMMEDIATE;
-  std::variant<int, int64_t, double, std::string> value;
+  std::variant<int, int64_t, real_t, std::string> value;
 
   static IRValue reg(int r) {
     IRValue v{};
@@ -134,7 +135,7 @@ struct IRValue {
     return v;
   }
 
-  static IRValue fimm(double d) {
+  static IRValue fimm(real_t d) {
     IRValue v{};
     v.type = Type::FLOAT;
     v.value = d;
@@ -211,7 +212,7 @@ struct IRGlobalVar {
     EMPTY_DICT   // Empty dictionary {}
   };
   InitType init_type = InitType::NONE;
-  std::variant<int64_t, double, std::string, bool> init_value;
+  std::variant<int64_t, real_t, std::string, bool> init_value;
 };
 
 struct IRProgram {

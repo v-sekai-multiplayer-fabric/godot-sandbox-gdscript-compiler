@@ -10,7 +10,7 @@ namespace gdscript {
 // Simple IR interpreter for testing without needing full RISC-V execution
 class IRInterpreter {
 public:
-  using Value = std::variant<int64_t, double, std::string, bool>;
+  using Value = std::variant<int64_t, real_t, std::string, bool>;
 
   IRInterpreter(const IRProgram &program);
 
@@ -37,7 +37,7 @@ private:
 
   // Helper functions
   int64_t get_int(const Value &v) const;
-  double get_double(const Value &v) const;
+  real_t get_real(const Value &v) const;
   bool get_bool(const Value &v) const;
   std::string get_string(const Value &v) const;
 

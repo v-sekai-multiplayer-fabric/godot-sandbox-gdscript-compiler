@@ -144,7 +144,7 @@ std::string IRValue::to_string() const {
     oss << std::get<int64_t>(value);
     break;
   case Type::FLOAT:
-    oss << std::get<double>(value);
+    oss << std::get<real_t>(value);
     break;
   case Type::LABEL:
     oss << "@" << std::get<std::string>(value);

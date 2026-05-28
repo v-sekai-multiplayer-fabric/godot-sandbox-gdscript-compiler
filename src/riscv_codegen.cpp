@@ -125,7 +125,7 @@ std::vector<uint8_t> RISCVCodeGen::generate(const IRProgram &program) {
       emit_sw(REG_T1, REG_T0, 0);
 
       // Write value: v.f (64-bit double) at offset 8
-      double value = std::get<double>(global.init_value);
+      real_t value = std::get<real_t>(global.init_value);
       int64_t bits;
       memcpy(&bits, &value, sizeof(double));
       emit_li(REG_T1, bits);
@@ -515,7 +515,7 @@ void RISCVCodeGen::gen_function(const IRFunction &func) {
 
     case IROpcode::LOAD_FLOAT_IMM: {
       int vreg = std::get<int>(instr.operands[0].value);
-      double value = std::get<double>(instr.operands[1].value);
+      real_t value = std::get<real_t>(instr.operands[1].value);
 
       // Convert double to bit pattern for storage
       int64_t bits;

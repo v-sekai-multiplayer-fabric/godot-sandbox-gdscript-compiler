@@ -563,7 +563,7 @@ ExprPtr Parser::parse_primary() {
 
   if (match(TokenType::FLOAT)) {
     Token num = previous();
-    return std::make_unique<LiteralExpr>(std::get<double>(num.value));
+    return std::make_unique<LiteralExpr>(std::get<real_t>(num.value));
   }
 
   if (match(TokenType::STRING)) {

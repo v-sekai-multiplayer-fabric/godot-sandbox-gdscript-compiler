@@ -4,13 +4,23 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#ifdef _WIN32
+#include <io.h>
+#include <fcntl.h>
+#include <cstdio>
+#else
 #include <unistd.h>
+#endif
 
 using namespace gdscript;
 
 // Helper to run a command and capture output
 std::string run_command(const char *cmd) {
+#ifdef _WIN32
+  FILE *pipe = _popen(cmd, "r");
+#else
   FILE *pipe = popen(cmd, "r");
+#endif
   if (!pipe) {
     return "Error: Failed to run command";
   }
@@ -22,10 +32,18 @@ std::string run_command(const char *cmd) {
       result += buffer;
     }
   } catch (...) {
+#ifdef _WIN32
+    _pclose(pipe);
+#else
     pclose(pipe);
+#endif
     throw;
   }
+#ifdef _WIN32
+  _pclose(pipe);
+#else
   pclose(pipe);
+#endif
   return result;
 }
 
@@ -62,7 +80,14 @@ int main(int argc, char **argv) {
 
   try {
     // Create temporary file for ELF
+#ifdef _WIN32
+    // Windows doesn't have mkstemp, use _mktemp_s
+    std::string temp_pattern = temp_elf;
+    _mktemp_s(&temp_pattern[0], temp_pattern.size() + 1);
+    temp_elf = temp_pattern;
+#else
     mkstemp(temp_elf.data());
+#endif
 
     // Parse and compile to ELF
     Compiler compiler;
@@ -82,7 +107,11 @@ int main(int argc, char **argv) {
       cmd << "readelf -l " << temp_elf << " 2>&1";
       std::string output = run_command(cmd.str().c_str());
       std::cout << output;
+#ifdef _WIN32
+      _unlink(temp_elf.c_str());
+#else
       unlink(temp_elf.c_str());
+#endif
       return 0;
     }
 
@@ -141,7 +170,11 @@ int main(int argc, char **argv) {
     }
 
     // Cleanup temp file
+#ifdef _WIN32
+    _unlink(temp_elf.c_str());
+#else
     unlink(temp_elf.c_str());
+#endif
 
     return function_found ? 0 : 1;
   } catch (const std::exception &e) {

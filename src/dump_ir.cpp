@@ -125,8 +125,8 @@ std::string format_operand_detailed(const IRValue &op) {
     break;
   }
   case IRValue::Type::FLOAT: {
-    double val = std::get<double>(op.value);
-    oss << std::setprecision(std::numeric_limits<double>::max_digits10) << val;
+    real_t val = std::get<real_t>(op.value);
+    oss << std::setprecision(std::numeric_limits<real_t>::max_digits10) << val;
     break;
   }
   case IRValue::Type::LABEL:
@@ -237,7 +237,7 @@ int main(int argc, char **argv) {
             std::cout << std::get<int64_t>(global.init_value);
             break;
           case IRGlobalVar::InitType::FLOAT:
-            std::cout << std::get<double>(global.init_value);
+            std::cout << std::get<real_t>(global.init_value);
             break;
           case IRGlobalVar::InitType::STRING:
             std::cout << "\"" << std::get<std::string>(global.init_value)

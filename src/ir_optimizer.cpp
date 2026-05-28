@@ -95,7 +95,7 @@ void IROptimizer::constant_folding(IRFunction &func) {
 
     case IROpcode::LOAD_FLOAT_IMM: {
       int reg = std::get<int>(instr.operands[0].value);
-      double val = std::get<double>(instr.operands[1].value);
+      real_t val = std::get<real_t>(instr.operands[1].value);
       ConstantValue cv;
       cv.type = ConstantValue::Type::FLOAT;
       cv.float_value = val;
@@ -1472,8 +1472,8 @@ void IROptimizer::eliminate_redundant_stores(IRFunction &func) {
             is_identical = (std::get<int64_t>(curr_val.value) ==
                             std::get<int64_t>(prev_val.value));
           } else if (curr_val.type == IRValue::Type::FLOAT) {
-            is_identical = (std::get<double>(curr_val.value) ==
-                            std::get<double>(prev_val.value));
+            is_identical = (std::get<real_t>(curr_val.value) ==
+                            std::get<real_t>(prev_val.value));
           } else if (curr_val.type == IRValue::Type::REGISTER) {
             // For MOVE: compare source register
             is_identical = (std::get<int>(curr_val.value) ==

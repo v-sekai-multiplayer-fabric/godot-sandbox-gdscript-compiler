@@ -6,7 +6,16 @@ project(gdscript_compiler)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Compiler sources
+# Floating-point precision support
+# Build both single and double precision variants for universal compatibility
+option(GDSCRIPT_BUILD_SINGLE "Build single precision (32-bit float) variant" ON)
+option(GDSCRIPT_BUILD_DOUBLE "Build double precision (64-bit double) variant" ON)
+
+# Default precision for the main target (used if only one is built)
+set(GDSCRIPT_DEFAULT_PRECISION "double" CACHE STRING "Default precision: single or double")
+set_property(CACHE GDSCRIPT_DEFAULT_PRECISION PROPERTY STRINGS "single" "double")
+
+# Compiler sources (shared across all precision variants)
 set(COMPILER_SOURCES
     src/compiler_exception.cpp
     src/token.cpp
@@ -22,13 +31,86 @@ set(COMPILER_SOURCES
     src/ir_interpreter.cpp
 )
 
-# Build as library
-add_library(gdscript_compiler STATIC ${COMPILER_SOURCES})
-target_include_directories(gdscript_compiler PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+# Helper function to build a precision variant
+function(build_precision_variant precision_suffix precision_type)
+    set(precision_name "${precision_type}${precision_suffix}")
+    
+    # Define precision macro
+    if("${precision_type}" STREQUAL "double")
+        set(precision_def "-DREAL_T_IS_DOUBLE")
+        set(precision_msg "double precision (64-bit)")
+    else()
+        set(precision_def "")
+        set(precision_msg "single precision (32-bit)")
+    endif()
+    
+    message(STATUS "Building ${precision_msg} variant: ${precision_name}")
+    
+    # Library
+    add_library(gdscript_compiler_${precision_type} STATIC ${COMPILER_SOURCES})
+    target_compile_definitions(gdscript_compiler_${precision_type} PRIVATE ${precision_def})
+    target_include_directories(gdscript_compiler_${precision_type} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+    
+    # Test executable
+    add_executable(gdscript_compiler_test_${precision_type} src/test_compiler.cpp)
+    target_link_libraries(gdscript_compiler_test_${precision_type} gdscript_compiler_${precision_type})
+    
+    # Dump IR utility
+    add_executable(dump_ir_${precision_type} src/dump_ir.cpp)
+    if(APPLE)
+        target_link_libraries(dump_ir_${precision_type} gdscript_compiler_${precision_type})
+    else()
+        target_link_libraries(dump_ir_${precision_type} -static gdscript_compiler_${precision_type})
+    endif()
+    
+    # GDScript to RISC-V tool
+    add_executable(gdscript_to_riscv_${precision_type} src/gdscript_to_riscv.cpp)
+    if(APPLE)
+        target_link_libraries(gdscript_to_riscv_${precision_type} gdscript_compiler_${precision_type})
+    else()
+        target_link_libraries(gdscript_to_riscv_${precision_type} -static gdscript_compiler_${precision_type})
+    endif()
+endfunction()
 
-# Build demo executable
-add_executable(gdscript_compiler_test src/test_compiler.cpp)
-target_link_libraries(gdscript_compiler_test gdscript_compiler)
+# Build precision variants
+if(GDSCRIPT_BUILD_SINGLE)
+    build_precision_variant("_single" "single")
+endif()
+
+if(GDSCRIPT_BUILD_DOUBLE)
+    build_precision_variant("_double" "double")
+endif()
+
+# Create convenience aliases for the default precision
+if(GDSCRIPT_BUILD_SINGLE AND GDSCRIPT_BUILD_DOUBLE)
+    # Universal build - create symlinks or aliases
+    message(STATUS "Universal build: both single and double precision variants built")
+    
+    # Create alias targets for convenience
+    if(GDSCRIPT_DEFAULT_PRECISION STREQUAL "double")
+        add_library(gdscript_compiler ALIAS gdscript_compiler_double)
+        add_executable(gdscript_compiler_test ALIAS gdscript_compiler_test_double)
+        add_executable(dump_ir ALIAS dump_ir_double)
+        add_executable(gdscript_to_riscv ALIAS gdscript_to_riscv_double)
+    else()
+        add_library(gdscript_compiler ALIAS gdscript_compiler_single)
+        add_executable(gdscript_compiler_test ALIAS gdscript_compiler_test_single)
+        add_executable(dump_ir ALIAS dump_ir_single)
+        add_executable(gdscript_to_riscv ALIAS gdscript_to_riscv_single)
+    endif()
+elseif(GDSCRIPT_BUILD_SINGLE)
+    # Single precision only
+    add_library(gdscript_compiler ALIAS gdscript_compiler_single)
+    add_executable(gdscript_compiler_test ALIAS gdscript_compiler_test_single)
+    add_executable(dump_ir ALIAS dump_ir_single)
+    add_executable(gdscript_to_riscv ALIAS gdscript_to_riscv_single)
+elseif(GDSCRIPT_BUILD_DOUBLE)
+    # Double precision only
+    add_library(gdscript_compiler ALIAS gdscript_compiler_double)
+    add_executable(gdscript_compiler_test ALIAS gdscript_compiler_test_double)
+    add_executable(dump_ir ALIAS dump_ir_double)
+    add_executable(gdscript_to_riscv ALIAS gdscript_to_riscv_double)
+endif()
 
 function(add_gdscript_test test_name test_source)
 	add_executable(${test_name} ${test_source})
@@ -40,22 +122,6 @@ function(add_gdscript_test test_name test_source)
 	endif()
 	add_test(NAME ${test_name} COMMAND ${test_name})
 endfunction()
-
-# Dump IR utility
-add_executable(dump_ir src/dump_ir.cpp)
-if(APPLE)
-	target_link_libraries(dump_ir gdscript_compiler)
-else()
-	target_link_libraries(dump_ir -static gdscript_compiler)
-endif()
-
-# GDScript to RISC-V disassembly tool
-add_executable(gdscript_to_riscv src/gdscript_to_riscv.cpp)
-if(APPLE)
-	target_link_libraries(gdscript_to_riscv gdscript_compiler)
-else()
-	target_link_libraries(gdscript_to_riscv -static gdscript_compiler)
-endif()
 
 if (BUILD_TESTING)
 	enable_testing()
@@ -82,7 +148,27 @@ if (BUILD_TESTING)
 endif()
 
 # Install targets (always built)
-install(TARGETS gdscript_compiler gdscript_compiler_test
-        RUNTIME DESTINATION bin
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib)
+if(GDSCRIPT_BUILD_SINGLE AND GDSCRIPT_BUILD_DOUBLE)
+    # Install both variants in universal build
+    install(TARGETS gdscript_compiler_single gdscript_compiler_double
+            LIBRARY DESTINATION lib
+            ARCHIVE DESTINATION lib)
+    install(TARGETS gdscript_compiler_test_single gdscript_compiler_test_double
+            dump_ir_single dump_ir_double
+            gdscript_to_riscv_single gdscript_to_riscv_double
+            RUNTIME DESTINATION bin)
+elseif(GDSCRIPT_BUILD_SINGLE)
+    # Install single precision only
+    install(TARGETS gdscript_compiler_single gdscript_compiler_test_single
+            dump_ir_single gdscript_to_riscv_single
+            RUNTIME DESTINATION bin
+            LIBRARY DESTINATION lib
+            ARCHIVE DESTINATION lib)
+elseif(GDSCRIPT_BUILD_DOUBLE)
+    # Install double precision only
+    install(TARGETS gdscript_compiler_double gdscript_compiler_test_double
+            dump_ir_double gdscript_to_riscv_double
+            RUNTIME DESTINATION bin
+            LIBRARY DESTINATION lib
+            ARCHIVE DESTINATION lib)
+endif()

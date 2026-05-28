@@ -2,6 +2,30 @@
 
 This is a complete GDScript compiler that compiles GDScript source code to RISC-V ELF binaries, executable in Godot Sandbox.
 
+## 🎯 Quick Start
+
+| **GOAL** | **COMMAND** | **RESULT** |
+|----------|-------------|------------|
+| Build compiler | ```bash<br>cmake -B build -S .<br>cmake --build build<br>``` | ✓ `gdscript_to_riscv.exe`<br>✓ `dump_ir.exe` |
+| Compile script | ```bash<br>./build/bin/gdscript_to_riscv script.gd -o script.elf<br>``` | ✓ RISC-V ELF binary |
+| View IR | ```bash<br>./build/bin/dump_ir script.gd<br>``` | ✓ Intermediate representation |
+
+---
+
+## 📐 Precision Support (New!)
+
+The compiler now supports **both single and double precision** floating-point modes, matching Godot's precision system.
+
+| **PRECISION** | **BUILD COMMAND** | **USE CASE** |
+|---------------|-------------------|--------------|
+| **Universal** (both) | `cmake -B build -S .` | Development, testing |
+| **Single** (32-bit) | `cmake ... -DGDSCRIPT_BUILD_DOUBLE=OFF` | Games, performance |
+| **Double** (64-bit) | `cmake ... -DGDSCRIPT_BUILD_SINGLE=OFF` | Physics, scientific |
+
+See **[PRECISION.md](PRECISION.md)** for detailed examples and triplets.
+
+---
+
 ## Source Files
 
 Located in `src/`:

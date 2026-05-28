@@ -1,4 +1,5 @@
 #pragma once
+#include "math_defs.h"
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -25,10 +26,10 @@ struct Expr {
 struct LiteralExpr : Expr {
   enum class Type { INTEGER, FLOAT, STRING, BOOL, NULL_VAL };
   Type lit_type;
-  std::variant<int64_t, double, std::string, bool> value;
+  std::variant<int64_t, real_t, std::string, bool> value;
 
   LiteralExpr(int64_t v) : lit_type(Type::INTEGER), value(v) {}
-  LiteralExpr(double v) : lit_type(Type::FLOAT), value(v) {}
+  LiteralExpr(real_t v) : lit_type(Type::FLOAT), value(v) {}
   LiteralExpr(std::string v) : lit_type(Type::STRING), value(std::move(v)) {}
   LiteralExpr(bool v) : lit_type(Type::BOOL), value(v) {}
   static std::unique_ptr<LiteralExpr> null() {

@@ -1,4 +1,5 @@
 #pragma once
+#include "math_defs.h"
 #include <cstdint>
 #include <string>
 #include <variant>
@@ -76,7 +77,7 @@ enum class TokenType {
 struct Token {
   TokenType type;
   std::string lexeme;
-  std::variant<int64_t, double, std::string> value;
+  std::variant<int64_t, real_t, std::string> value;
   int line;
   int column;
 
