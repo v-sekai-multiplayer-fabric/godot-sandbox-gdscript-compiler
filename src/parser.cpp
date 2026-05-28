@@ -523,7 +523,7 @@ ExprPtr Parser::parse_primary() {
 
 	if (match(TokenType::STRING)) {
 		Token str = previous();
-		return std::make_unique<LiteralExpr>(std::get<std::string>(str.value));
+		return std::make_unique<LiteralExpr>(std::string(std::get<2>(str.value)));
 	}
 
 	if (match(TokenType::IDENTIFIER)) {

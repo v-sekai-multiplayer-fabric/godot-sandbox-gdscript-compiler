@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <variant>
+#include <cstdint>
 
 namespace gdscript {
 
