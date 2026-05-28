@@ -1,0 +1,25 @@
+# GDScript Compiler
+
+## Binary Files Excluded
+*.elf
+*.rv64.elf
+build/
+cmake-build-*/
+*.o
+*.so
+*.a
+*.lib
+
+## Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+## OS Files
+.DS_Store
+Thumbs.db
+
+## Logs
+*.log
