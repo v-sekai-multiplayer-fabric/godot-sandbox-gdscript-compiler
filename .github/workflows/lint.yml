@@ -1,0 +1,27 @@
+name: Lint
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: Code Quality
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: |
+          sudo apt update
+          sudo apt install -y clang-format
+
+      - name: Check formatting
+        run: |
+          find src -name "*.cpp" -o -name "*.h" | while read file; do
+            clang-format --dry-run --Werror "$file" || exit 1
+          done
