@@ -54,9 +54,11 @@ function(build_precision_variant precision_suffix precision_type)
     # Test executable
     add_executable(gdscript_compiler_test_${precision_type} src/test_compiler.cpp)
     target_link_libraries(gdscript_compiler_test_${precision_type} gdscript_compiler_${precision_type})
+    target_compile_definitions(gdscript_compiler_test_${precision_type} PRIVATE ${precision_def})
     
     # Dump IR utility
     add_executable(dump_ir_${precision_type} src/dump_ir.cpp)
+    target_compile_definitions(dump_ir_${precision_type} PRIVATE ${precision_def})
     if(APPLE)
         target_link_libraries(dump_ir_${precision_type} gdscript_compiler_${precision_type})
     else()
@@ -65,6 +67,7 @@ function(build_precision_variant precision_suffix precision_type)
     
     # GDScript to RISC-V tool
     add_executable(gdscript_to_riscv_${precision_type} src/gdscript_to_riscv.cpp)
+    target_compile_definitions(gdscript_to_riscv_${precision_type} PRIVATE ${precision_def})
     if(APPLE)
         target_link_libraries(gdscript_to_riscv_${precision_type} gdscript_compiler_${precision_type})
     else()

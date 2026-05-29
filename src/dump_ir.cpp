@@ -126,6 +126,12 @@ std::string format_operand_detailed(const IRValue &op) {
   }
   case IRValue::Type::FLOAT: {
     real_t val = std::get<real_t>(op.value);
+    // Debug: print raw bytes
+    #ifdef DEBUG_PRECISION
+    std::cout << "[DEBUG] real_t size=" << sizeof(real_t) 
+              << ", max_digits10=" << std::numeric_limits<real_t>::max_digits10
+              << ", val=" << std::setprecision(std::numeric_limits<real_t>::max_digits10) << val << std::endl;
+    #endif
     oss << std::setprecision(std::numeric_limits<real_t>::max_digits10) << val;
     break;
   }
